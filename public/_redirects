@@ -1,3 +1,7 @@
+/geoserver/*   https://idrogeo.isprambiente.it   200   same-origin
+/idrogeo-api/*   https://idrogeo.isprambiente.it   200   same-origin
+/meteoalarm/*   https://feeds.meteoalarm.org   200   same-origin
+/open-meteo/*   https://api.open-meteo.com   200   same-origin
 /photon/*   https://photon.komoot.io   200   same-origin
 
 /*   /index.html   200   same-origin   follow
