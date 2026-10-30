@@ -1,7 +1,8 @@
 // MeteoAlarm — allerte CAP per l'Italia, in tempo reale.
-// Proxato via Vite: /meteoalarm → https://feeds.meteoalarm.org
+// Proxy server-side via Vite (dev) o Netlify Function (produzione).
+import { absoluteBase } from './utils.js';
 
-const FEED = '/meteoalarm/feeds/meteoalarm-legacy-atom-italy';
+const FEED = `${absoluteBase}/meteoalarm/feeds/meteoalarm-legacy-atom-italy`;
 
 const SEVERITY = {
   extreme: { label: 'Estremo', color: '#b3001b', order: 4 },

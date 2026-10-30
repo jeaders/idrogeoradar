@@ -224,6 +224,11 @@ export async function buildStyle(basemapKey, visible = {}) {
   // Stili vettoriali OpenFreeMap
   const res = await fetch(OFM.positron);
   const base = await res.json();
+  // Sanitizza i filtri: aggiunge typeof-check prima di confronti numerici
+  // per evitare "Expected value to be of type number, but found null instead"
+  for (const layer of base.layers) {
+    if (layer.filter) layer.filter = sanitizeFilter(layer.filter);
+  }
   if (basemapKey === 'scuro') darken(base);
   addAttribution(base, basemapKey);
 
@@ -235,6 +240,28 @@ export async function buildStyle(basemapKey, visible = {}) {
     base.layers.splice(labelsIdx === -1 ? base.layers.length : labelsIdx + i, 0, l);
   });
   return base;
+}
+
+/**
+ * Aggiunge un typeof-check ("number") prima di ogni confronto numerico (`<`, `>`,
+ * `<=`, `>=`) che legga una proprietà con `get`.  Alcuni layer di OpenFreeMap
+ * (es. `highway-shield-*`, `label_country_3`) usano filtri numerici senza
+ * verificare che la proprietà esista, causando "Expected value to be of type
+ * number, but found null instead" nel worker di MapLibre.  Non è un errore
+ * fatale, ma elimina il warning e impedisce a mappa di lavorare inutilmente.
+ */
+function sanitizeFilter(filter) {
+  if (!Array.isArray(filter)) return filter;
+  const op = filter[0];
+  const args = filter.slice(1);
+  if ((op === '<' || op === '>' || op === '<=' || op === '>=') && args.length === 2) {
+    const isGet = (e) => Array.isArray(e) && e[0] === 'get';
+    if (isGet(args[0]) || isGet(args[1])) {
+      const propExpr = isGet(args[0]) ? args[0] : args[1];
+      return ['all', ['==', ['typeof', propExpr], 'number'], filter];
+    }
+  }
+  return [op, ...args.map(sanitizeFilter)];
 }
 
 function addAttribution(style, key) {

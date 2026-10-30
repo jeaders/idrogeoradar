@@ -1,8 +1,11 @@
 // Photon (Komoot / OpenStreetMap) — ricerca di luoghi, senza API key.
-// Proxato via Vite: /photon → https://photon.komoot.io
+// Proxy server-side via Vite (dev) o Netlify Function (produzione).
+import { absoluteBase } from './utils.js';
+
+const BASE = `${absoluteBase}/photon`;
 
 export async function searchPlaces(q, signal) {
-  const url = `/photon/api?q=${encodeURIComponent(q)}&limit=7`
+  const url = `${BASE}/api?q=${encodeURIComponent(q)}&limit=7`
     + `&osm_tag=place:city&osm_tag=place:town&osm_tag=place:village&osm_tag=county`;
   const r = await fetch(url, { signal });
   if (!r.ok) throw new Error(`Photon ${r.status}`);
@@ -15,7 +18,7 @@ export async function searchPlaces(q, signal) {
       county: f.properties?.county ?? '',
       lon: f.geometry.coordinates[0],
       lat: f.geometry.coordinates[1],
-      extent: f.properties?.extent ?? null, // [minLon, maxLat, maxLon, minLat]
+      extent: f.properties?.extent ?? null,
     }));
 }
 

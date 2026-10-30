@@ -1,5 +1,8 @@
-// API GeoServer IdroGEO (ISPRA) — proxati via Vite per evitare CORS.
-const OWS = '/geoserver/idrogeo/ows';
+// API GeoServer IdroGEO (ISPRA) — proxy server-side via Vite (dev) o Netlify Function (produzione).
+import { absoluteBase } from './utils.js';
+
+const OWS = `${absoluteBase}/geoserver/idrogeo/ows`;
+const API = `${absoluteBase}/idrogeo`;
 
 /** Template URL per Vector Tiles (MVT) di un layer GeoServer. */
 export function mvtUrl(layer) {
@@ -20,7 +23,7 @@ export function wmsUrl(layer) {
  * contenente un punto lon/lat, tramite WFS con bbox ristretto.
  */
 export async function fetchComuneAt(lon, lat, signal) {
-  const d = 0.004; // ~400 m
+  const d = 0.004;
   const bbox = `${lon - d},${lat - d},${lon + d},${lat + d}`;
   const url = `${OWS}?service=WFS&version=2.0.0&request=GetFeature`
     + `&typeNames=idrogeo:comuni_pir&srsName=urn:ogc:def:crs:EPSG::4326`
@@ -31,10 +34,6 @@ export async function fetchComuneAt(lon, lat, signal) {
   const fc = await r.json();
   return fc.features?.[0]?.properties ?? null;
 }
-
-// ─── API tabellare IdroGEO (PostgREST, https://idrogeo.isprambiente.it/api) ───
-
-const API = '/idrogeo-api';
 
 /** Indice comuni (uid, nome, regione/provincia, extent). ~7900 voci, in memoria. */
 let comuniIndexPromise = null;
@@ -84,7 +83,7 @@ export async function fetchPirRegione(codReg, signal) {
 /** Interrogazione puntuale del mosaico di pericolosità (WMS GetFeatureInfo). */
 export async function featureInfoMosaico(layer, lon, lat, zoom, visible = true) {
   if (!visible) return null;
-  const denom = 156543.03392804097 / Math.pow(2, zoom); // m/px
+  const denom = 156543.03392804097 / Math.pow(2, zoom);
   const sizeM = denom * 512;
   const mx = lon * 20037508.34 / 180;
   const myRad = Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI / 180) / 2));
@@ -92,7 +91,7 @@ export async function featureInfoMosaico(layer, lon, lat, zoom, visible = true) 
   const bbox = `${mx - sizeM / 2},${myMerc - sizeM / 2},${mx + sizeM / 2},${myMerc + sizeM / 2}`;
   const url = `${OWS}?service=WMS&version=1.3.0&request=GetFeatureInfo`
     + `&layers=idrogeo:${layer}&query_layers=idrogeo:${layer}`
-    + `&crs=EPSG:3857&bbox=${bbox}&width=512&height=512&i=256&j=256`
+    + `&crs=EPSG:3857&bbox=${encodeURIComponent(bbox)}&width=512&height=512&i=256&j=256`
     + `&info_format=application/json&format=image/png`;
   try {
     const r = await fetch(url);

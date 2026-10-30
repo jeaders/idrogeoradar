@@ -1,19 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Proxy per evitare problemi di CORS in sviluppo.
-// Gli endpoint esterni (GeoServer ISPRA, MeteoAlarm, Open-Meteo, Photon)
-// vengono raggiunti dal browser tramite lo stesso origine.
+// In development, Vite proxies both:
+// - Direct paths (/geoserver, /idrogeo, /meteoalarm, /open-meteo, /photon)
+// - Prefixed paths (/api/geoserver, /api/idrogeo, /api/meteoalarm, /api/open-meteo, /api/photon)
+// The prefixed paths mirror the production Netlify Function proxy structure.
 const proxy = {
   '/geoserver': {
     target: 'https://idrogeo.isprambiente.it',
     changeOrigin: true,
     secure: true,
   },
-  '/idrogeo-api': {
+  '/idrogeo': {
     target: 'https://idrogeo.isprambiente.it',
     changeOrigin: true,
-    rewrite: (p) => p.replace(/^\/idrogeo-api/, '/api'),
+    rewrite: (p) => p.replace(/^\/idrogeo/, '/api'),
   },
   '/meteoalarm': {
     target: 'https://feeds.meteoalarm.org',
@@ -29,6 +30,32 @@ const proxy = {
     target: 'https://photon.komoot.io',
     changeOrigin: true,
     rewrite: (p) => p.replace(/^\/photon/, ''),
+  },
+  // Mirror of API paths for Netlify Function compatibility
+  '/api/geoserver': {
+    target: 'https://idrogeo.isprambiente.it',
+    changeOrigin: true,
+    rewrite: (p) => p.replace(/^\/api\/geoserver/, '/geoserver'),
+  },
+  '/api/idrogeo': {
+    target: 'https://idrogeo.isprambiente.it',
+    changeOrigin: true,
+    rewrite: (p) => p.replace(/^\/api\/idrogeo/, '/api'),
+  },
+  '/api/meteoalarm': {
+    target: 'https://feeds.meteoalarm.org',
+    changeOrigin: true,
+    rewrite: (p) => p.replace(/^\/api\/meteoalarm/, ''),
+  },
+  '/api/open-meteo': {
+    target: 'https://api.open-meteo.com',
+    changeOrigin: true,
+    rewrite: (p) => p.replace(/^\/api\/open-meteo/, ''),
+  },
+  '/api/photon': {
+    target: 'https://photon.komoot.io',
+    changeOrigin: true,
+    rewrite: (p) => p.replace(/^\/api\/photon/, ''),
   },
 };
 

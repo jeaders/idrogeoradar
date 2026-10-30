@@ -1,7 +1,2 @@
-/geoserver/*   https://idrogeo.isprambiente.it/*   200
-/idrogeo-api/*   https://idrogeo.isprambiente.it/*   200
-/meteoalarm/*   https://feeds.meteoalarm.org/*   200
-/open-meteo/*   https://api.open-meteo.com/*   200
-/photon/*   https://photon.komoot.io/*   200
-
-/*   /index.html   200
+/api/*	/.netlify/functions/api	200
+/*	/index.html	200
