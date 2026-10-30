@@ -15,6 +15,17 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+function buildQueryString(event) {
+  const params = new URLSearchParams();
+  const multi = event.multiValueQueryStringParameters || {};
+  const single = event.queryStringParameters || {};
+  for (const key of Object.keys(single)) {
+    const vals = multi[key] || [single[key]];
+    for (const v of vals) params.append(key, v);
+  }
+  return params.toString();
+}
+
 function fetchWithRedirects(url, maxRedirects = 5) {
   return new Promise((resolve, reject) => {
     if (maxRedirects < 0) {
@@ -31,13 +42,17 @@ function fetchWithRedirects(url, maxRedirects = 5) {
         return;
       }
 
-      let body = '';
-      res.on('data', (chunk) => body += chunk);
+      let chunks = [];
+      res.on('data', (chunk) => chunks.push(chunk));
       res.on('end', () => {
+        const bodyBuffer = Buffer.concat(chunks);
+        const contentType = res.headers['content-type'] || 'application/json';
+        const isText = contentType.startsWith('text/') || contentType.includes('json') || contentType.includes('xml');
         resolve({
           statusCode: res.statusCode,
           headers: res.headers,
-          body: body,
+          body: isText ? bodyBuffer.toString('utf8') : bodyBuffer.toString('base64'),
+          isBase64: !isText,
         });
       });
     });
@@ -70,8 +85,7 @@ export const handler = async (event, context) => {
     };
   }
 
-  const queryString = new URLSearchParams(event.queryStringParameters || {});
-  const qs = queryString.toString();
+  const qs = buildQueryString(event);
   const targetUrl = `${backend.origin}${rewrittenPath}${qs ? `?${qs}` : ''}`;
 
   try {
@@ -80,7 +94,7 @@ export const handler = async (event, context) => {
     return {
       statusCode: res.statusCode || 200,
       headers: { ...corsHeaders, 'Content-Type': res.headers['content-type'] || 'application/json' },
-      isBase64Encoded: false,
+      isBase64Encoded: res.isBase64,
       body: res.body,
     };
   } catch (error) {

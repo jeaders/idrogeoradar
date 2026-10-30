@@ -127,8 +127,8 @@ export const DATA_LAYERS = {
     label: 'Popolazione comunale a rischio',
     kind: 'mvt',
     layer: 'comuni_pir',
-    minzoom: 5.5,
-    sourceProps: { minzoom: 5, maxzoom: 11, tileSize: 512 },
+    minzoom: 7,
+    sourceProps: { minzoom: 7, maxzoom: 14, tileSize: 512 },
   },
   frane_aree: {
     label: 'Aree di frana IFFI',
