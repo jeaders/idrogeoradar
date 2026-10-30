@@ -43,7 +43,7 @@ export function computeRisk(p) {
     allPct: allTot,
     frP3P4AreaKmq: num(p.ar_fr_p3p4 ?? 0),
     popAtRisk: num(p.popfr_p3p4 ?? 0),         // abitanti in area frana P3+P4
-    popAtRiskIdr: num(p.pop_idr_p3 + p.pop_idr_p2 + p.pop_idr_p1),
+    popAtRiskIdr: num((p.pop_idr_p3 ?? 0) + (p.pop_idr_p2 ?? 0) + (p.pop_idr_p1 ?? 0)),
     edAtRisk: num(p.ed_fr_p3p4 ?? 0),
     famAtRisk: num(p.famfr_p3p4 ?? 0),
   };
