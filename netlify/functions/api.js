@@ -1,5 +1,5 @@
-const https = require('https');
-const http = require('http');
+import https from 'https';
+import http from 'http';
 
 const BACKENDS = {
   '/api/geoserver/': { origin: 'https://idrogeo.isprambiente.it', rewrite: '/geoserver/' },
@@ -24,7 +24,6 @@ function fetchWithRedirects(url, maxRedirects = 5) {
 
     const lib = url.startsWith('https:') ? https : http;
     const req = lib.get(url, (res) => {
-      // Handle redirect
       if (res.statusCode >= 301 && res.statusCode <= 303 && res.headers.location) {
         const redirectUrl = new URL(res.headers.location, url).toString();
         res.resume();
@@ -46,7 +45,7 @@ function fetchWithRedirects(url, maxRedirects = 5) {
   });
 }
 
-exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return { statusCode: 200, headers: corsHeaders, body: '' };
   }
