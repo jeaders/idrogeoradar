@@ -1,0 +1,5 @@
+# robots.txt — IdrogeoRadar
+User-agent: *
+Allow: /
+
+Sitemap: https://idrogeoradar.netlify.app/sitemap.xml
